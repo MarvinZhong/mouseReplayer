@@ -9,7 +9,7 @@ def writer(click):
     x, y = pyautogui.position()
     print('click recorded at: ' + str(x) + ', ' + str(y))
     time.sleep(0.1)
-    with open(cordFile+'.txt', 'a') as f:
+    with open(cordFile + '.txt', 'a') as f:
         f.write(str(click) + ' ' + str(x) + ' ' + str(y) + ' 1\n')
     time.sleep(0.1)
 
@@ -38,7 +38,7 @@ def realTimer(action):
             pTime = int(time.time() - rTime)
             print('click recorded at: ' + str(x) + ', ' + str(y))
             time.sleep(0.1)
-            with open(cordFile+'.txt', 'a') as f:
+            with open(cordFile + '.txt', 'a') as f:
                 f.write('1 ' + str(x) + ' ' + str(y) +
                         ' ' + str(pTime) + ' 1\n')
             time.sleep(0.1)
@@ -47,7 +47,7 @@ def realTimer(action):
             pTime = int(time.time() - rTime)
             print('click recorded at: ' + str(x) + ', ' + str(y))
             time.sleep(0.1)
-            with open(cordFile+'.txt', 'a') as f:
+            with open(cordFile + '.txt', 'a') as f:
                 f.write('2 ' + str(x) + ' ' + str(y) +
                         ' ' + str(pTime) + ' 1\n')
             time.sleep(0.1)
@@ -59,16 +59,17 @@ def realTimer(action):
 def Rec():
     # delete the file if it exists
     try:
-        open(cordFile+'.txt', 'w').close()
+        open(cordFile + '.txt', 'w').close()
     except:
         pass
     print(pyautogui.size())  # print screen size
-    print('mode : [1] speed, [2] time-range, [3] real-time')
+    print('mode to select : [1] speed, [2] time-range, [3] real-time')
     mode = input('select mode : ')
+    loop = input('how many loop : ')
     if mode == '1':
         print('speed mode selected')
-        with open(cordFile+'.txt', 'a') as f:
-            f.write('1 0 0\n')
+        with open(cordFile + '.txt', 'a') as f:
+            f.write('1 0 0 ' + loop + '\n')
         recorder(True)
     elif mode == '2':
         print('time range mode selected')
@@ -76,13 +77,13 @@ def Rec():
         eTime = input('end range (s) :')
         timeRange = sTime + ' ' + eTime
         print('time range : ' + timeRange)
-        with open(cordFile+'.txt', 'a') as f:
-            f.write('2 ' + timeRange + '\n')
+        with open(cordFile + '.txt', 'a') as f:
+            f.write('2 ' + timeRange + ' ' + loop + '\n')
         recorder(True)
     elif mode == '3':
         print('real time mode selected')
-        with open(cordFile+'.txt', 'a') as f:
-            f.write('3 0 0\n')
+        with open(cordFile + '.txt', 'a') as f:
+            f.write('3 0 0 ' + loop + '\n')
         realTimer(True)
     else:
         print('error')
@@ -103,40 +104,49 @@ def moveCord(xCord=None, yCord=None, delay=0.1):
 
 # read cordFile and loop through each line
 def Play():
-    with open(cordFile+'.txt') as f:
-        mode, sRange, eRange = map(int, f.readline().split(' '))
+    with open(cordFile + '.txt') as f:
+        mode, sRange, eRange, loop = map(int, f.readline().split(' '))
         if mode == 1:
-            for line in f.readlines()[1:]:
-                # print('hi')
-                which, xCord, yCord, pressTimes = map(int, line.split())
-                if which == 1:
-                    clickCord(xCord, yCord, pressTimes)
-                elif which == 2:
-                    rightCord(xCord, yCord, pressTimes)
+            for _ in range(loop):
+                print('loop : ' + str(_+1))
+                with open(cordFile + '.txt') as f:
+                    for line in f.readlines()[1:]:
+                        # print('hi')
+                        which, xCord, yCord, pressTimes = map(int, line.split())
+                        if which == 1:
+                            clickCord(xCord, yCord, pressTimes)
+                        elif which == 2:
+                            rightCord(xCord, yCord, pressTimes)
         elif mode == 2:
-            print(sRange, eRange)
-            # interval random float from sRange to eRange
-            for line in f.readlines()[1:]:
-                interval = random.uniform(sRange, eRange)
-                print(interval)
-                which, xCord, yCord, pressTimes = map(int, line.split())
-                moveCord(xCord, yCord, interval)
-                if which == 1:
-                    clickCord(xCord, yCord, pressTimes)
-                elif which == 2:
-                    rightCord(xCord, yCord, pressTimes)
+            for _ in range(loop):
+                print('loop : ' + str(_+1))
+                print(sRange, eRange)
+                # interval random float from sRange to eRange
+                with open(cordFile + '.txt') as f:
+                    for line in f.readlines()[1:]:
+                        interval = random.uniform(sRange, eRange)
+                        print(interval)
+                        which, xCord, yCord, pressTimes = map(int, line.split())
+                        moveCord(xCord, yCord, interval)
+                        if which == 1:
+                            clickCord(xCord, yCord, pressTimes)
+                        elif which == 2:
+                            rightCord(xCord, yCord, pressTimes)
         elif mode == 3:
-            reminder = 0
-            for line in f.readlines()[1:]:
-                which, xCord, yCord, interval, pressTimes = map(
-                    int, line.split())
-                # 0.6 seconds is the default prefix time
-                moveCord(xCord, yCord, interval - reminder - 0.6)
-                if which == 1:
-                    clickCord(xCord, yCord, pressTimes)
-                elif which == 2:
-                    rightCord(xCord, yCord, pressTimes)
-                reminder = interval
+            for _ in range(loop):
+                print('loop : ' + str(_+1))
+                reminder = 0
+                with open(cordFile + '.txt') as f:
+                    for line in f.readlines()[1:]:
+                        which, xCord, yCord, interval, pressTimes = map(
+                            int, line.split())
+                        # 0.6 seconds is the default prefix time
+                        moveCord(xCord, yCord, interval - reminder - 0.6)
+                        if which == 1:
+                            clickCord(xCord, yCord, pressTimes)
+                        elif which == 2:
+                            rightCord(xCord, yCord, pressTimes)
+                        reminder = interval
         else:
             print('mode not found')
 
